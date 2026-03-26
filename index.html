@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI YouTube Studio</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);
+            min-height:100vh;padding:20px;color:#fff;
+        }
+        .container{max-width:600px;margin:0 auto;}
+        h1{text-align:center;margin-bottom:30px;font-size:28px;}
+        .input-group{
+            background:rgba(255,255,255,0.1);border-radius:16px;padding:20px;margin-bottom:20px;
+        }
+        input{
+            width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;
+            background:#fff;margin-bottom:15px;
+        }
+        button{
+            width:100%;padding:15px;background:#00ff88;color:#000;border:none;
+            border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer;
+        }
+        button:active{transform:scale(0.98);}
+        .result{
+            background:rgba(255,255,255,0.1);border-radius:16px;padding:20px;
+            margin-top:20px;display:none;
+        }
+        .script-box{
+            background:#000;padding:15px;border-radius:12px;margin:15px 0;
+            white-space:pre-wrap;font-family:monospace;
+        }
+        .loading{text-align:center;padding:20px;display:none;}
+        video{width:100%;border-radius:12px;margin:15px 0;}
+        @media (max-width:600px){body{padding:10px;}h1{font-size:24px;}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 AI YouTube Studio</h1>
+        <div class="input-group">
+            <input type="text" id="topic" placeholder="Enter video topic... e.g., How to make money online" autocomplete="off">
+            <button onclick="generateVideo()">✨ Generate Video</button>
+        </div>
+        <div class="loading" id="loading"><p>🤖 AI is working...</p></div>
+        <div class="result" id="result">
+            <h3>📝 Script</h3>
+            <div class="script-box" id="script"></div>
+            <div id="videoPreview"></div>
+        </div>
+    </div>
+    <script>
+        async function generateVideo(){
+            const topic=document.getElementById('topic').value;
+            if(!topic){alert('Please enter a topic');return;}
+            document.getElementById('loading').style.display='block';
+            document.getElementById('result').style.display='none';
+            try{
+                const response=await fetch('/generate',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({topic:topic})
+                });
+                const data=await response.json();
+                document.getElementById('script').innerText=data.script;
+                if(data.video_url){
+                    document.getElementById('videoPreview').innerHTML=`
+                        <h3>🎥 Stock Footage</h3>
+                        <video controls><source src="${data.video_url}" type="video/mp4"></video>
+                    `;
+                }
+                document.getElementById('result').style.display='block';
+            }catch(e){alert('Error: '+e.message);}
+            finally{document.getElementById('loading').style.display='none';}
+        }
+    </script>
+</body>
+</html>
