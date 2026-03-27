@@ -1,5 +1,5 @@
-flask
-google-generativeai
-requests
-gunicorn
-edge-tts
+flask==2.3.3
+google-generativeai==0.8.3
+requests==2.31.0
+gunicorn==21.2.0
+edge-tts==6.1.9
