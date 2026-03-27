@@ -2,79 +2,323 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI YouTube Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AI YouTube Studio - Automatic Video Creator</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{
-            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-            background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);
-            min-height:100vh;padding:20px;color:#fff;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container{max-width:600px;margin:0 auto;}
-        h1{text-align:center;margin-bottom:30px;font-size:28px;}
-        .input-group{
-            background:rgba(255,255,255,0.1);border-radius:16px;padding:20px;margin-bottom:20px;
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 16px;
+            color: #f1f5f9;
         }
-        input{
-            width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;
-            background:#fff;margin-bottom:15px;
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
         }
-        button{
-            width:100%;padding:15px;background:#00ff88;color:#000;border:none;
-            border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer;
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        button:active{transform:scale(0.98);}
-        .result{
-            background:rgba(255,255,255,0.1);border-radius:16px;padding:20px;
-            margin-top:20px;display:none;
+        
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .script-box{
-            background:#000;padding:15px;border-radius:12px;margin:15px 0;
-            white-space:pre-wrap;font-family:monospace;
+        
+        .header p {
+            font-size: 12px;
+            opacity: 0.7;
         }
-        .loading{text-align:center;padding:20px;display:none;}
-        video{width:100%;border-radius:12px;margin:15px 0;}
-        @media (max-width:600px){body{padding:10px;}h1{font-size:24px;}}
+        
+        .badge {
+            display: inline-block;
+            background: #22c55e;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        /* Input Section */
+        .input-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 14px;
+            font-size: 16px;
+            background: #1e293b;
+            color: #fff;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #22c55e;
+            background: #0f172a;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            display: none;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(34,197,94,0.3);
+            border-top-color: #22c55e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Result Section */
+        .result {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .result h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .script-box {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 14px;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            border-left: 3px solid #22c55e;
+        }
+        
+        video, audio {
+            width: 100%;
+            border-radius: 14px;
+            margin: 10px 0;
+        }
+        
+        .download-btn {
+            background: #3b82f6;
+            margin-top: 10px;
+            font-size: 14px;
+            padding: 10px;
+        }
+        
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 20px 0;
+        }
+        
+        .info-text {
+            font-size: 12px;
+            opacity: 0.6;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .header h1 { font-size: 22px; }
+            .input-card { padding: 16px; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎬 AI YouTube Studio</h1>
-        <div class="input-group">
-            <input type="text" id="topic" placeholder="Enter video topic... e.g., How to make money online" autocomplete="off">
-            <button onclick="generateVideo()">✨ Generate Video</button>
+        <div class="header">
+            <h1>🎬 AI YouTube Studio</h1>
+            <p>One Click Video Creator | Script + Voice + Footage</p>
+            <div class="badge">⚡ 100% Free | No Watermark</div>
         </div>
-        <div class="loading" id="loading"><p>🤖 AI is working...</p></div>
+        
+        <div class="input-card">
+            <div class="input-group">
+                <label>📝 Enter Video Topic</label>
+                <input type="text" id="topic" placeholder="e.g., How to make money online, Best AI tools 2024, Crypto trading for beginners" autocomplete="off">
+            </div>
+            <button onclick="generateVideo()" id="generateBtn">✨ Generate Complete Video</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>🤖 AI is working...</p>
+            <p style="font-size:12px; margin-top:8px;">Generating script • Creating voiceover • Finding footage</p>
+        </div>
+        
         <div class="result" id="result">
-            <h3>📝 Script</h3>
+            <h3>📝 AI Generated Script</h3>
             <div class="script-box" id="script"></div>
+            
+            <div class="divider"></div>
+            
+            <h3>🎥 Stock Footage</h3>
             <div id="videoPreview"></div>
+            
+            <div class="divider"></div>
+            
+            <h3>🎤 Voiceover Audio</h3>
+            <div id="audioPreview"></div>
+            
+            <div class="info-text">
+                💡 Tip: Download both files and combine in CapCut (free) or any video editor
+            </div>
         </div>
     </div>
+
     <script>
-        async function generateVideo(){
-            const topic=document.getElementById('topic').value;
-            if(!topic){alert('Please enter a topic');return;}
-            document.getElementById('loading').style.display='block';
-            document.getElementById('result').style.display='none';
-            try{
-                const response=await fetch('/generate',{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({topic:topic})
+        async function generateVideo() {
+            const topic = document.getElementById('topic').value;
+            if (!topic.trim()) {
+                alert('Please enter a video topic');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⏳ Generating...';
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: topic })
                 });
-                const data=await response.json();
-                document.getElementById('script').innerText=data.script;
-                if(data.video_url){
-                    document.getElementById('videoPreview').innerHTML=`
-                        <h3>🎥 Stock Footage</h3>
-                        <video controls><source src="${data.video_url}" type="video/mp4"></video>
-                    `;
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
                 }
-                document.getElementById('result').style.display='block';
-            }catch(e){alert('Error: '+e.message);}
-            finally{document.getElementById('loading').style.display='none';}
+                
+                // Display script
+                document.getElementById('script').innerText = data.script;
+                
+                // Display video
+                if (data.video_url) {
+                    document.getElementById('videoPreview').innerHTML = `
+                        <video controls>
+                            <source src="${data.video_url}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <button class="download-btn" onclick="window.open('${data.video_url}', '_blank')">
+                            📥 Download Video
+                        </button>
+                    `;
+                } else {
+                    document.getElementById('videoPreview').innerHTML = '<p style="opacity:0.7;">⚠️ No stock footage found. Try a different topic.</p>';
+                }
+                
+                // Display audio
+                if (data.audio_url) {
+                    document.getElementById('audioPreview').innerHTML = `
+                        <audio controls>
+                            <source src="${data.audio_url}" type="audio/mpeg">
+                            Your browser does not support the audio tag.
+                        </audio>
+                        <button class="download-btn" onclick="window.open('${data.audio_url}', '_blank')">
+                            📥 Download Audio
+                        </button>
+                    `;
+                } else {
+                    document.getElementById('audioPreview').innerHTML = '<p style="opacity:0.7;">⚠️ Audio generation failed. Try again.</p>';
+                }
+                
+                document.getElementById('result').style.display = 'block';
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+                console.error(error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                generateBtn.disabled = false;
+                generateBtn.textContent = '✨ Generate Complete Video';
+            }
         }
     </script>
 </body>
