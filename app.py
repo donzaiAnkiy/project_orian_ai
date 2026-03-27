@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import google.generativeai as genai
 import requests
 import os
 import traceback
+import edge_tts
+import asyncio
+import uuid
 
 app = Flask(__name__)
 
@@ -47,6 +50,17 @@ def get_pexels_video(keyword):
         print(f"Pexels error: {e}")
     return None
 
+async def generate_audio(text, filename):
+    """Generate audio from text using Edge TTS (free)"""
+    try:
+        voice = "en-US-JennyNeural"  # Female voice
+        communicate = edge_tts.Communicate(text, voice)
+        await communicate.save(filename)
+        return True
+    except Exception as e:
+        print(f"Audio error: {e}")
+        return False
+
 @app.route('/')
 def index():
     """Home page"""
@@ -67,15 +81,30 @@ def generate():
         script = generate_script(topic)
         video_url = get_pexels_video(topic.split()[0])
         
+        # Generate audio
+        audio_filename = f"audio_{uuid.uuid4().hex[:8]}.mp3"
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        audio_success = loop.run_until_complete(generate_audio(script, audio_filename))
+        
         return jsonify({
             "script": script,
             "video_url": video_url,
+            "audio_url": f"/download/{audio_filename}" if audio_success else None,
             "topic": topic,
             "status": "success"
         })
     except Exception as e:
         print(f"Generate error: {traceback.format_exc()}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/download/<filename>')
+def download(filename):
+    """Download generated audio file"""
+    try:
+        return send_file(filename, as_attachment=True, download_name=filename)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
 
 @app.route('/health')
 def health():
